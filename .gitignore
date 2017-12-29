@@ -1,0 +1,12 @@
+data
+models
+tools
+.ipynb_checkpoints
+*.h5
+*.swp
+*.p
+lenet*
+notes.txt
+scratch*
+checkpoint
+nohup.out
