@@ -18,3 +18,9 @@ https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zi
 
 Project rubric
 https://review.udacity.com/#!/rubrics/432/view
+
+Nvidia paper:
+https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
+
+Comma.ai model:
+https://github.com/commaai/research/blob/master/train_steering_model.py
