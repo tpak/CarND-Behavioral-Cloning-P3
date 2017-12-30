@@ -1,5 +1,6 @@
 __MACOSX/
 data
+data.zip
 models
 tools
 .ipynb_checkpoints
