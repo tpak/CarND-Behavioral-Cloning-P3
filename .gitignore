@@ -1,5 +1,6 @@
 __MACOSX/
 data
+*.zip
 data.zip
 models
 tools
@@ -11,3 +12,4 @@ notes.txt
 scratch*
 checkpoint
 nohup.out
+CarNDTrackData
