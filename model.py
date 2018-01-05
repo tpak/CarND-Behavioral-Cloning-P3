@@ -22,20 +22,26 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
         if header:
             next(reader, None)
         for line in reader:
-            img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
-            img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
-            img_right = csv_dir + '/IMG/' + line[2].split('/')[-1].strip()
-            image_list.append(img_center)
-            image_list.append(img_left)
-            image_list.append(img_right)
             measurement = float(line[3])
-            measurements.append(measurement)
-            measurements.append(measurement + correction)
-            measurements.append(measurement - correction)
+            if ((measurement <= -0.15) or (measurement >= 0.15)):
+                img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
+                img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
+                img_right = csv_dir + '/IMG/' + line[2].split('/')[-1].strip()
+                image_list.append(img_center)
+                image_list.append(img_left)
+                image_list.append(img_right)
+
+                measurements.append(measurement)
+                measurements.append(measurement + correction)
+                measurements.append(measurement - correction)
 
     return (image_list, measurements)
 
-imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.2)
+#imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.2)
+#imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.2)
+#imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.2)
+imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
+#imagePaths, measurements = read_csv_file('./data', correction=0.2, header=True)
 # print(len(imagePaths))
 # print(len(measurements))
 # X_train = np.array(images)
@@ -79,6 +85,7 @@ def generator(X, y, batch_size=64):
 from keras.models import Sequential, Model
 from keras.layers import Flatten, Dense, Lambda, Convolution2D, Cropping2D
 from keras.layers import MaxPooling2D
+from keras import optimizers
 
 def modelCommon():
     model = Sequential()
@@ -111,10 +118,13 @@ model = modelCommon()
 #model = simpleModel(model)
 model = modelnVidia(model)
 
+adam = optimizers.Adam(lr=0.0001)
+#Adamax = optimizers.Adamax(lr=0.0001)
+
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(generator(X_train, y_train, batch_size=64), \
     samples_per_epoch= len(X_train), \
     validation_data=generator(X_valid, y_valid, batch_size=64), \
-    nb_val_samples=len(X_valid), nb_epoch=3, verbose=1)
+    nb_val_samples=len(X_valid), nb_epoch=5, verbose=1)
 
 model.save('model.h5')
