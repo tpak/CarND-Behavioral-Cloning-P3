@@ -23,7 +23,7 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
             next(reader, None)
         for line in reader:
             measurement = float(line[3])
-            if ((measurement <= -0.15) or (measurement >= 0.15)):
+            if ((measurement <= -0.20) or (measurement >= 0.20)):
                 img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
                 img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
                 img_right = csv_dir + '/IMG/' + line[2].split('/')[-1].strip()
@@ -40,7 +40,7 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
 #imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.2)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.2)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.2)
-imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
+imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.25, header=True)
 #imagePaths, measurements = read_csv_file('./data', correction=0.2, header=True)
 # print(len(imagePaths))
 # print(len(measurements))
