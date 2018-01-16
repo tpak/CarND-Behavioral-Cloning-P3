@@ -23,6 +23,8 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
             next(reader, None)
         for line in reader:
             measurement = float(line[3])
+            # TODO - fix this so that we only make fake stuff for training NOT
+            # also for validation ... this is in the wrong place?
             if ((measurement <= -0.25) or (measurement >= 0.25)):
                 img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
                 img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
@@ -69,9 +71,11 @@ def generator(X, y, batch_size=64, train=True):
                 # suggested in forums - not yet implemeted
                 # do we really need to?
                 # randomize brightness
-                ...
+                #...
                 # resize and normalize
-                ...
+                #...
+                # suggested by mentor - add shadows to training data
+                #...
                 images.append(image)
                 measurements.append(y[i])
                 if train:
@@ -101,14 +105,19 @@ def modelCommon():
 def modelnVidia(model):
     # from nVidia SDC model - good baseline to start with
     # crop so we only see the road and not the sky and the hood
-    # is this the same as nVisa model actually used? significant?
+    # is this the same as nVidia model actually used? significant?
+    # nVidia was 66x200?
     model.add(Cropping2D(cropping=((50,20), (0,0))))
+    # re-shape?
+    # not sure 3,5,5, is correct but matching the paper 
+    model.add(Convolution2D(3,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(24,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(36,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Flatten())
+    model.add(Dense(1164))
     model.add(Dense(100))
     model.add(Dense(50))
     model.add(Dense(10))
@@ -124,13 +133,13 @@ model = modelCommon()
 #model = simpleModel(model)
 model = modelnVidia(model)
 
-adam = optimizers.Adam(lr=0.0001)
+#adam = optimizers.Adam(lr=0.0001)
 #Adamax = optimizers.Adamax(lr=0.0001)
 
 model.compile(loss='mse', optimizer='adam')
-model.fit_generator(generator(X_train, y_train, batch_size=32, train=True), \
+model.fit_generator(generator(X_train, y_train, batch_size=64, train=True), \
     samples_per_epoch= len(X_train), \
-    validation_data=generator(X_valid, y_valid, batch_size=32, train=False), \
+    validation_data=generator(X_valid, y_valid, batch_size=64, train=False), \
     nb_val_samples=len(X_valid), nb_epoch=20, verbose=1)
 
 model.save('model.h5')
