@@ -10,7 +10,7 @@ from sklearn.utils import shuffle
 print("Using TensorFlow version:", tf.__version__)
 print("Using Keras version:", keras.__version__)
 
-def read_csv_file(csv_dir, header=False, correction=0.2):
+def read_csv_file(csv_dir, header=False, correction=0.0):
     lines = []
     image_list = []
     measurements = []
@@ -23,9 +23,7 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
             next(reader, None)
         for line in reader:
             measurement = float(line[3])
-            # TODO - fix this so that we only make fake stuff for training NOT
-            # also for validation ... this is in the wrong place?
-            if ((measurement <= -0.25) or (measurement >= 0.25)):
+            if ((measurement <= -correction) or (measurement >= correction)):
                 img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
                 img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
                 img_right = csv_dir + '/IMG/' + line[2].split('/')[-1].strip()
@@ -43,7 +41,7 @@ def read_csv_file(csv_dir, header=False, correction=0.2):
 #imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3)
-imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.3, header=True)
+imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.0, header=True)
 
 # print(len(imagePaths))
 # print(len(measurements))
@@ -56,7 +54,7 @@ X_train, y_train = shuffle(X_train, y_train)
 print('Train images: {} Train measurements: {}'.format(len(X_train), len(y_train)))
 print('Validation samples: {} validation measurements: {}'.format(len(X_valid), len(y_valid)))
 
-def generator(X, y, batch_size=64, train=True):
+def generator(X, y, batch_size=32, train=True):
     X, y = shuffle(X, y)
     num_samples = len(X)
     print("generator # samples: ", num_samples)
@@ -71,11 +69,9 @@ def generator(X, y, batch_size=64, train=True):
                 # suggested in forums - not yet implemeted
                 # do we really need to?
                 # randomize brightness
-                #...
+                ...
                 # resize and normalize
-                #...
-                # suggested by mentor - add shadows to training data
-                #...
+                ...
                 images.append(image)
                 measurements.append(y[i])
                 if train:
@@ -105,19 +101,14 @@ def modelCommon():
 def modelnVidia(model):
     # from nVidia SDC model - good baseline to start with
     # crop so we only see the road and not the sky and the hood
-    # is this the same as nVidia model actually used? significant?
-    # nVidia was 66x200?
+    # is this the same as nVisa model actually used? significant?
     model.add(Cropping2D(cropping=((50,20), (0,0))))
-    # re-shape?
-    # not sure 3,5,5, is correct but matching the paper 
-    model.add(Convolution2D(3,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(24,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(36,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Flatten())
-    model.add(Dense(1164))
     model.add(Dense(100))
     model.add(Dense(50))
     model.add(Dense(10))
@@ -133,14 +124,14 @@ model = modelCommon()
 #model = simpleModel(model)
 model = modelnVidia(model)
 
-#adam = optimizers.Adam(lr=0.0001)
+adam = optimizers.Adam(lr=0.0001)
 #Adamax = optimizers.Adamax(lr=0.0001)
 
 model.compile(loss='mse', optimizer='adam')
-model.fit_generator(generator(X_train, y_train, batch_size=64, train=True), \
+model.fit_generator(generator(X_train, y_train, batch_size=32, train=True), \
     samples_per_epoch= len(X_train), \
-    validation_data=generator(X_valid, y_valid, batch_size=64, train=False), \
-    nb_val_samples=len(X_valid), nb_epoch=20, verbose=1)
+    validation_data=generator(X_valid, y_valid, batch_size=32, train=False), \
+    nb_val_samples=len(X_valid), nb_epoch=7, verbose=1)
 
 model.save('model.h5')
 print("run complete")
