@@ -11,6 +11,7 @@ print("Using TensorFlow version:", tf.__version__)
 print("Using Keras version:", keras.__version__)
 
 def read_csv_file(csv_dir, header=False, correction=0.0):
+    print("using data from: ", csv_dir)
     lines = []
     image_list = []
     measurements = []
@@ -42,8 +43,8 @@ def read_csv_file(csv_dir, header=False, correction=0.0):
 #imagePaths, measurements = read_csv_file('./data', correction=0.3, header=True)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3)
-#imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3)
-imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
+imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3, header=True)
+#imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
 
 X_train, X_valid, y_train, y_valid = train_test_split(imagePaths, measurements, test_size=0.2)
 X_train, y_train = shuffle(X_train, y_train)
@@ -68,7 +69,7 @@ def generator(X, y, batch_size=32, train=True):
             measurements = []
             for i in range (len(batch_samples)):
                 image = cv2.imread(X[i])
-                image = cv2.cvtColor(originalImage, cv2.COLOR_BGR2RGB)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 # suggested in forums - not yet implemeted
                 # do we really need to?
                 # randomize brightness
@@ -88,7 +89,7 @@ def generator(X, y, batch_size=32, train=True):
             measurements = np.array(measurements)
 
             # shaken not stirred, shuffle again
-            yield sklearn.shuffle(images, measurements)
+            yield shuffle(images, measurements)
 
 from keras.models import Sequential, Model
 from keras.layers import Flatten, Dense, Lambda, Convolution2D, Cropping2D
@@ -149,16 +150,3 @@ print("run complete")
 
 # print the keys contained in the history object
 print(history_object.history.keys())
-
-# shamelessly searched git for this
-# plot the training and validation loss for each epoch
-import matplotlib.pyplot as plt
-
-plt.plot(history_object.history['loss'])
-plt.plot(history_object.history['val_loss'])
-plt.title('model mean squared error loss')
-plt.ylabel('mean squared error loss')
-plt.xlabel('epoch')
-plt.legend(['training set', 'validation set'], loc='upper right')
-plt.savefig('loss.png', dpi=100)
-#plt.show()
