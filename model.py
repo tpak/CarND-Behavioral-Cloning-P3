@@ -147,6 +147,3 @@ history_object = model.fit_generator(train_generator, samples_per_epoch= \
 # save the model
 model.save('model.h5')
 print("run complete")
-
-# print the keys contained in the history object
-print(history_object.history.keys())
