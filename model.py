@@ -27,10 +27,13 @@ def read_csv_file(csv_dir, header=False, correction=0.0):
                 img_center = csv_dir + '/IMG/' + line[0].split('/')[-1].strip()
                 img_left = csv_dir + '/IMG/' + line[1].split('/')[-1].strip()
                 img_right = csv_dir + '/IMG/' + line[2].split('/')[-1].strip()
+
+                # add images
                 image_list.append(img_center)
                 image_list.append(img_left)
                 image_list.append(img_right)
 
+                # add steering and correction for side cams
                 measurements.append(measurement)
                 measurements.append(measurement + correction)
                 measurements.append(measurement - correction)
@@ -41,7 +44,7 @@ def read_csv_file(csv_dir, header=False, correction=0.0):
 #imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3)
-imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.0, header=True)
+imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
 
 # print(len(imagePaths))
 # print(len(measurements))
@@ -92,17 +95,19 @@ from keras.layers import Flatten, Dense, Lambda, Convolution2D, Cropping2D
 from keras.layers import MaxPooling2D
 from keras import optimizers
 
+# basic parts of the model
 def modelCommon():
     model = Sequential()
     # normalize the image
     model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(160,320,3)))
+    # crop the image
+    model.add(Cropping2D(cropping=((50,20), (0,0))))
     return model
 
 def modelnVidia(model):
     # from nVidia SDC model - good baseline to start with
     # crop so we only see the road and not the sky and the hood
     # is this the same as nVisa model actually used? significant?
-    model.add(Cropping2D(cropping=((50,20), (0,0))))
     model.add(Convolution2D(24,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(36,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
@@ -120,18 +125,20 @@ def simpleModel(model):
     model.add(Dense(1))
     return (model)
 
+# create the full model
 model = modelCommon()
 #model = simpleModel(model)
 model = modelnVidia(model)
 
-adam = optimizers.Adam(lr=0.0001)
+#adam = optimizers.Adam
+#adam = optimizers.Adam(lr=0.0001)
 #Adamax = optimizers.Adamax(lr=0.0001)
 
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(generator(X_train, y_train, batch_size=32, train=True), \
     samples_per_epoch= len(X_train), \
     validation_data=generator(X_valid, y_valid, batch_size=32, train=False), \
-    nb_val_samples=len(X_valid), nb_epoch=7, verbose=1)
+    nb_val_samples=len(X_valid), nb_epoch=3, verbose=1)
 
 model.save('model.h5')
 print("run complete")
