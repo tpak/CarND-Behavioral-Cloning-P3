@@ -41,13 +41,12 @@ def read_csv_file(csv_dir, header=False, correction=0.0):
     return (image_list, measurements)
 
 #imagePaths, measurements = read_csv_file('./data', correction=0.3, header=True)
-#imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3)
-#imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3)
+#imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3, header=True))
+#imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3, header=True))
 imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3, header=True)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
 
 X_train, X_valid, y_train, y_valid = train_test_split(imagePaths, measurements, test_size=0.2)
-X_train, y_train = shuffle(X_train, y_train)
 
 # print(len(imagePaths))
 # print(len(measurements))
@@ -78,11 +77,11 @@ def generator(X, y, batch_size=32, train=True):
                 ...
                 images.append(image)
                 measurements.append(y[i])
-                if train:
+                #if train:
                     # augment the data by flipping images
                     # but only when training not validating
-                    images.append(cv2.flip(image, 1))
-                    measurements.append(y[i] * -1.0)
+                images.append(cv2.flip(image, 1))
+                measurements.append(y[i] * -1.0)
 
             # convert to float
             images = np.array(images)
@@ -92,7 +91,7 @@ def generator(X, y, batch_size=32, train=True):
             yield shuffle(images, measurements)
 
 from keras.models import Sequential, Model
-from keras.layers import Flatten, Dense, Lambda, Convolution2D, Cropping2D
+from keras.layers import Flatten, Dense, Lambda, Convolution2D, Cropping2D, Dropout
 from keras.layers import MaxPooling2D
 from keras import optimizers
 
@@ -114,7 +113,9 @@ def modelnVidia(model):
     model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
+    #model.add(Dropout(0.2))
     model.add(Flatten())
+    model.add(Dense(1164))
     model.add(Dense(100))
     model.add(Dense(50))
     model.add(Dense(10))
@@ -131,7 +132,7 @@ model = modelCommon()
 #model = simpleModel(model)
 model = modelnVidia(model)
 
-adam = optimizers.Adam
+adam = optimizers.Adam()
 #adam = optimizers.Adam(lr=0.0001)
 #adam = optimizers.Adamax()
 #Adamax = optimizers.Adamax(lr=0.0001)
@@ -139,11 +140,16 @@ adam = optimizers.Adam
 train_generator = generator(X_train, y_train, batch_size=32, train=True)
 validation_generator = generator(X_valid, y_valid, batch_size=32, train=False)
 
-model.compile(loss='mse', optimizer='adam')
+model.compile(loss='mse', optimizer=adam)
 history_object = model.fit_generator(train_generator, samples_per_epoch= \
     len(X_train), validation_data=validation_generator, \
     nb_val_samples=len(X_valid), nb_epoch=3, verbose=1)
 
 # save the model
-model.save('model.h5')
+model.save('model3.h5')
 print("run complete")
+print(history_object.history.keys())
+print('Loss')
+print(history_object.history['loss'])
+print('Validation Loss')
+print(history_object.history['val_loss'])
