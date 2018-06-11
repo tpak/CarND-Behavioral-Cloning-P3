@@ -131,5 +131,5 @@ history_object = model.fit_generator(train_generator, samples_per_epoch= \
     nb_val_samples=len(X_valid), nb_epoch=3, verbose=1)
 
 # save the model
-model.save('model3.h5')
+model.save('model.h5')
 model.summary()
