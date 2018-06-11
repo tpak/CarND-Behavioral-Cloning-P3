@@ -1,4 +1,4 @@
-# Project: Behavioral Cloning ** 
+# Project: Behavioral Cloning
 ## Autonomously drive a simulated mode car around a track - just keep it on the road!
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
