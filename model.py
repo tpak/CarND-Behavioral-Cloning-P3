@@ -40,6 +40,7 @@ def read_csv_file(csv_dir, header=False, correction=0.0):
 
     return (image_list, measurements)
 
+# data oh data, where are thou?
 #imagePaths, measurements = read_csv_file('./data', correction=0.3, header=True)
 #imagePaths, measurements = read_csv_file('./CarNDTrackData2', correction=0.3, header=True))
 #imagePaths, measurements = read_csv_file('./CarNDTrackData3', correction=0.3, header=True))
@@ -47,11 +48,6 @@ imagePaths, measurements = read_csv_file('./CarNDTrackData4', correction=0.3, he
 #imagePaths, measurements = read_csv_file('./CarNDTrackData5', correction=0.2, header=True)
 
 X_train, X_valid, y_train, y_valid = train_test_split(imagePaths, measurements, test_size=0.2)
-
-# print(len(imagePaths))
-# print(len(measurements))
-# X_train = np.array(images)
-# y_train = np.array(measurements)
 
 print('Train images: {} Train measurements: {}'.format(len(X_train), len(y_train)))
 print('Validation samples: {} validation measurements: {}'.format(len(X_valid), len(y_valid)))
@@ -69,21 +65,11 @@ def generator(X, y, batch_size=32, train=True):
             for i in range (len(batch_samples)):
                 image = cv2.imread(X[i])
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                # suggested in forums - not yet implemeted
-                # do we really need to?
-                # randomize brightness
-                ...
-                # resize and normalize
-                ...
                 images.append(image)
                 measurements.append(y[i])
-                #if train:
-                    # augment the data by flipping images
-                    # but only when training not validating
                 images.append(cv2.flip(image, 1))
                 measurements.append(y[i] * -1.0)
 
-            # convert to float
             images = np.array(images)
             measurements = np.array(measurements)
 
@@ -113,7 +99,6 @@ def modelnVidia(model):
     model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
     model.add(Convolution2D(64,3,3, activation='relu'))
-    #model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(1164))
     model.add(Dense(100))
@@ -129,13 +114,13 @@ def simpleModel(model):
 
 # create the full model
 model = modelCommon()
-#model = simpleModel(model)
 model = modelnVidia(model)
 
 adam = optimizers.Adam()
+# tried these to no reall difference
 #adam = optimizers.Adam(lr=0.0001)
 #adam = optimizers.Adamax()
-#Adamax = optimizers.Adamax(lr=0.0001)
+#adam = optimizers.Adamax(lr=0.0001)
 
 train_generator = generator(X_train, y_train, batch_size=32, train=True)
 validation_generator = generator(X_valid, y_valid, batch_size=32, train=False)
@@ -147,9 +132,4 @@ history_object = model.fit_generator(train_generator, samples_per_epoch= \
 
 # save the model
 model.save('model3.h5')
-print("run complete")
-print(history_object.history.keys())
-print('Loss')
-print(history_object.history['loss'])
-print('Validation Loss')
-print(history_object.history['val_loss'])
+model.summary()
